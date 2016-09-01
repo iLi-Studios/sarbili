@@ -1,4 +1,11 @@
 Options +Indexes
 RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^([^\.]+)$ $1.php [NC,L]
+#RewriteCond %{REQUEST_FILENAME} !-f
+#RewriteRule ^([^\.]+)$ $1.php [NC,L]
+
+RewriteRule ^([^/]+)$ index.php?f=$1 [L,QSA]
+RewriteRule ^([^/]+)/([^/]+)$ index.php?f=$1&p1=$2 [L,QSA]
+RewriteRule ^([^/]+)/([^/]+)/([^/]+)$ index.php?f=$1&p1=$2&p2=$3 [L,QSA]
+RewriteRule ^([^/]+)/([^/]+)/([^/]+)/([^/]+)$ index.php?f=$1&p1=$2&p2=$3&p3=$4 [L,QSA]
+RewriteRule ^([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)$ index.php?f=$1&p1=$2&p2=$3&p3=$4&p4=$5 [L,QSA]
+RewriteRule ^([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)$ index.php?f=$1&p1=$2&p2=$3&p3=$4&p4=$5&p5=$6 [L,QSA]
