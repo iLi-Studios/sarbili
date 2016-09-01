@@ -76,40 +76,6 @@ function GetRank($Token){
 	return $x["rankUser"];
 }
 
-function GetUserList(){
-		if($x=QueryExcute("SELECT * FROM `user`")){
-			$reponse["success"] = 1; 
-			$reponse["message"] = "";
-			while($row_x=$x->fetch_assoc()){
-				$reponse_child[]=$row_x;
-				$reponse["Users"]=$reponse_child;
-			}
-		$x->close();
-		}
-		else{
-			$reponse["success"] = 0; 
-			$reponse["message"] = "Pas d'utilisateurs!";
-		}
-		print(json_encode($reponse));
-}
-function GetUser($idUser){
-	if ($x = QueryExcute("SELECT * FROM `user` WHERE `idUser`='$idUser'")) {
-		if($row=$x->fetch_assoc()){
-			$reponse["success"] = 1; 
-			$reponse["message"] = "";
-			$reponse["loginUser"] = $row["loginUser"];
-			$reponse["rankUser"] = $row["rankUser"];
-			$reponse["token"] = $row["token"];
-		}
-		else{
-			$reponse["success"] = 0; 
-			$reponse["message"] = "Utilisateur introuvable!";
-		}
-		$x->close();
-		print(json_encode($reponse));
-	}
-}
-
 /* Log */
 function LogWrite($idUser, $Description){
 	global $Timestamp;
@@ -133,6 +99,20 @@ function LogRead($Token){
 		$reponse["message"] = "Vous êtes pas autorisé!";
 	}
 	print(json_encode($reponse));
+}
+
+/* Help */
+function Help(){
+	echo "<br><h2>HTTP REQUEST</h2><br>";
+	echo "CALL METHOD: <b>FUNCTION/VAR1/VAR2/.../VAR5</b><br>";
+	echo "EXEMPLE-1: LogIn/admin/21232f297a57a5a743894a0e4a801fc3<br>";
+	echo "EXEMPLE-2: LogIn/user/ee11cbb19052e40b07aac0ca060c23ee<br><br>";
+	echo "<hr>";
+	echo "<br>";
+	echo "<h3>Functions List</h3><br>";
+	echo "GET_LogIn(loginUser, MD5(passUser))<br>";
+	echo "GET_LogOut(Token)<br>";
+	echo "GET_LogRead(Token)//Only Admin<br>";
 }
 ?>
 
