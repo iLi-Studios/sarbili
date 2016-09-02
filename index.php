@@ -18,6 +18,8 @@ if(isset($_GET['f'])){
 		//Authentification
 		case "LogIn";LogIn($p1, $p2);break;
 		case "LogOut";LogOut($p1);break;
+		//User
+		case "UserAdd";UserAdd($p1, $p2);break;
 		//Log
 		case "LogRead";LogRead($p1);break;
 		case "Help";Help();break;

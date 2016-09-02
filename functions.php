@@ -1,6 +1,7 @@
 <?php
 /* System */
 $Timestamp = date("d-m-Y H:i:s");
+$NewUserDefaultMdp = "sarbili";
 function QueryExcute($Query){
 	$MySQLi = new mysqli("localhost", "root", "", "sarbili");
 	if (mysqli_connect_errno()) {
@@ -14,7 +15,7 @@ function QueryExcute($Query){
 /* Authentification */
 function TokenGenerate($idUser){
 	$Token = md5(uniqid($idUser, true));
-	QueryExcute("UPDATE `user` SET `token`='$Token' WHERE `idUser`='$idUser'");
+	$x=QueryExcute("UPDATE `user` SET `token`='$Token' WHERE `idUser`='$idUser'");
 }
 function LogIn($loginUser, $passUser){
 	if ($x = QueryExcute("SELECT * FROM `user` WHERE `loginUser`='$loginUser' AND `passUser`='$passUser'")) {
@@ -56,7 +57,8 @@ function LogOut($Token){
 		// cas ou il y a un utilisateur connecté avec cette token
 		if($row=$x->fetch_assoc()){
 			$idUser=$row["idUser"];
-			QueryExcute("UPDATE `user` SET `token`=NULL WHERE `idUser`='$idUser'");
+			$y=QueryExcute("UPDATE `user` SET `token`=NULL WHERE `idUser`='$idUser'");
+			$y->close();
 			LogWrite($idUser, "Deconexion");
 			$reponse["success"] = 1;
 			$reponse["message"] = "Déconnection!";
@@ -74,6 +76,35 @@ function LogOut($Token){
 function GetRank($Token){
 	$x = QueryExcute("SELECT `rankUser` FROM `user` WHERE `token`='$Token'")->fetch_assoc();
 	return $x["rankUser"];
+	$x->close();
+}
+function IdFromToken($Token){
+	$x = QueryExcute("SELECT `idUser` FROM `user` WHERE `token`='$Token'")->fetch_assoc();
+	return $x["idUser"];
+	$x->close();
+}
+function UserAdd($Login, $Token){
+	global $NewUserDefaultMdp;
+	$RankUser=GetRank($Token);
+	if($RankUser=='Administrateur'){
+		$idAdmin=IdFromToken($Token);
+		if($x=QueryExcute("INSERT INTO `user` values (NULL, '$Login', MD5('".$NewUserDefaultMdp."'), 'Utilisateur', NULL)")){
+			$reponse["success"] = 1;
+			$reponse["message"] = 'Utilisateur : '.$Login.' a été ajouté avec succès';
+			LogWrite($idAdmin, "Nouveau utilisateur : ".$Login);
+			$x->close();	
+		}
+		else{
+			$reponse["success"] = 0;
+			$reponse["message"] = "Erreur : nom d'utilisateur est déjà pris";
+		}
+	}
+	else{
+		$reponse["success"] = 0;
+		$reponse["message"] = "Vous êtes pas autorisé!";
+	}
+	print(json_encode($reponse));
+
 }
 
 /* Log */
@@ -83,8 +114,8 @@ function LogWrite($idUser, $Description){
 }
 function LogRead($Token){
 	$RankUser=GetRank($Token);
-	if($RankUser=='admin'){
-		if($x=QueryExcute("SELECT * FROM `logsystem`")){
+	if($RankUser=='Administrateur'){
+		if($x=QueryExcute("SELECT `logsystem`.`idLog`, `logsystem`.`Description`, `logsystem`.`Timestamp`, `user`.`idUser`, `user`.`loginUser`, `user`.`rankUser`, `user`.`token` FROM `logsystem`, `user` WHERE `logsystem`.`idUser` = `user`.`idUser` Order by `idLog` DESC")){
 			$reponse["success"] 	= 1;
 			$reponse["message"] 	= "";
 			while($row_x=$x->fetch_assoc()){
@@ -110,9 +141,10 @@ function Help(){
 	echo "<hr>";
 	echo "<br>";
 	echo "<h3>Functions List</h3><br>";
-	echo "GET_LogIn(loginUser, MD5(passUser))<br>";
-	echo "GET_LogOut(Token)<br>";
-	echo "GET_LogRead(Token)//Only Admin<br>";
+	echo "GET LogIn(loginUser, MD5(passUser))<br>";
+	echo "GET LogOut(Token)<br>";
+	echo "GET LogRead(Token)//Only Admin<br>";
+	echo "GET UserAdd(Login, Token)//Only Admin<br>";
 }
 ?>
 
