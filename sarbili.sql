@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Client :  127.0.0.1
--- Généré le :  Jeu 01 Septembre 2016 à 14:30
+-- Généré le :  Ven 02 Septembre 2016 à 14:20
 -- Version du serveur :  5.6.17
 -- Version de PHP :  5.5.12
 
@@ -47,7 +47,8 @@ CREATE TABLE IF NOT EXISTS `user` (
   `passUser` varchar(250) NOT NULL,
   `rankUser` varchar(250) NOT NULL,
   `token` varchar(250) DEFAULT NULL,
-  PRIMARY KEY (`idUser`)
+  PRIMARY KEY (`idUser`),
+  UNIQUE KEY `loginUser` (`loginUser`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=3 ;
 
 --
@@ -55,8 +56,8 @@ CREATE TABLE IF NOT EXISTS `user` (
 --
 
 INSERT INTO `user` (`idUser`, `loginUser`, `passUser`, `rankUser`, `token`) VALUES
-(1, 'admin', '21232f297a57a5a743894a0e4a801fc3', 'admin', NULL),
-(2, 'user', 'ee11cbb19052e40b07aac0ca060c23ee', 'user', NULL);
+(1, 'admin', '21232f297a57a5a743894a0e4a801fc3', 'Administrateur', NULL),
+(2, 'user', 'ee11cbb19052e40b07aac0ca060c23ee', 'Utilisateur', NULL);
 
 --
 -- Contraintes pour les tables exportées
