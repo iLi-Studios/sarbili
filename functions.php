@@ -132,7 +132,7 @@ function UserAdd($Token){
 			}
 			else{
 				$reponse["success"] = 0;
-				$reponse["message"] = "Erreur : nom d'utilisateur est déjà pris";
+				$reponse["message"] = "Erreur : Nom d'utilisateur est déjà pris";
 			}	
 		}
 		else{
@@ -172,13 +172,58 @@ function UserDelete($Token){
 					}
 					else{
 						$reponse["success"] = 0;
-						$reponse["message"] = "Erreur : suppression utilisateur";
+						$reponse["message"] = "Erreur : Suppression utilisateur";
 					}	
 				}
 				else{
 					$reponse["success"] = 0;
 					$reponse["message"] = 'Erreur : L\'administrateur ne peut pas se supprimer';
 				}
+			}
+			else{
+				$reponse["success"] = 0;
+				$reponse["message"] = 'Erreur : Utilisateur non trouvé!';
+			}
+		}
+		else{
+			$reponse["success"] = 0;
+			$reponse["message"] = "Erreur : Champ(s) manquant(s)";
+		}
+	}
+	else{
+		$reponse["success"] = 0;
+		$reponse["message"] = "Erreur : Vous êtes pas autorisé!";
+	}
+	print(json_encode($reponse));
+}
+function UserUpdate($Token){
+	$RankUser=GetRank($Token);
+	if($RankUser=='Administrateur'){
+		$idAdmin=IdFromToken($Token);
+		/*
+		Requête HTTP Post
+		*/
+		// tableau de réponse JSON (array)
+		$reponse=array();
+		// tester si les champs sont valides
+		if(isset($_GET['idUser'])&&isset($_GET['NewLoginUser'])){
+			$idUser=addslashes($_GET['idUser']);
+			$NewLoginUser=addslashes($_GET['NewLoginUser']);
+			$LoginUser=GetUserLogin($idUser);
+			//test si l'utilisateur existe ou pas && l'admin ne peut pas se supprimer (system 1 admin n utilisateur)
+			$y=QueryExcute("SELECT COUNT(*) FROM `user` WHERE `idUser`='$idUser'")->fetch_array();
+			if($y[0]>0){
+				$z=QueryExcute("SELECT `rankUser` FROM `user` WHERE `idUser`='$idUser'")->fetch_assoc();
+				$RankUserFromIdUser=$z["rankUser"];
+				if($x=QueryExcute("UPDATE `user` SET `loginUser` = '".$NewLoginUser."' WHERE `idUser` =".$idUser)){
+					$reponse["success"] = 1;
+					$reponse["message"] = 'Mise à jour nom d\'utilisateur de '.$LoginUser.' a '.$NewLoginUser;
+					LogWrite($idAdmin, "Mise a jour nom d\'utilisateur de ".$LoginUser." a ".$NewLoginUser);	
+				}
+				else{
+					$reponse["success"] = 0;
+					$reponse["message"] = "Erreur : Modification utilisateur";
+				}	
 			}
 			else{
 				$reponse["success"] = 0;

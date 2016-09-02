@@ -21,6 +21,7 @@ if(isset($_GET['f'])){
 		//User
 		case "UserAdd";UserAdd($p1);break;
 		case "UserDelete";UserDelete($p1);break;
+		case "UserUpdate";UserUpdate($p1);break;
 		//Log
 		case "LogRead";LogRead($p1);break;
 		case "Help";Help();break;
