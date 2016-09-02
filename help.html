@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Function Help</title>
+</head>
+
+<body>
+	<br>
+    <center><h2>HTTP REQUEST</h2></center><br>
+    <table>
+    	<tr>
+        	<td>HTTP REQUEST FUNCTION:</td>
+            <td><b> /Function</b></td>
+        </tr>
+        <tr>
+        	<td>HTTP REQUEST & VARIBALES:</td>
+            <td><b>/Function/Function_Var</b></td>
+        </tr>
+		<tr>
+        	<td>EXEMPLE-1:</td>
+            <td><b>LogIn/admin/21232f297a57a5a743894a0e4a801fc3</b></td>
+        </tr>
+		<tr>
+        	<td>EXEMPLE-2:</td>
+            <td><b>LogIn/user/ee11cbb19052e40b07aac0ca060c23ee</b></td>
+        </tr>
+    </table>
+    <br>
+    <strong>PS : You have to respect Upper/Lower Case</strong><br>
+	<hr>
+    <br>
+	<center><h3>Functions List</h3></center><br>
+    <table width="100%" style="text-align:left;">
+  <tbody>
+    <tr>
+      <th scope="col">Function</th>
+      <th scope="col">Function_Var</th>
+      <th scope="col">Type</th>
+      <th scope="col">Type_Var</th>
+      <th scope="col">Authorisation</th>
+    </tr>
+    <tr>
+      <th scope="row">LogIn</th>
+      <td>loginUser/MD5(passUser)</td>
+      <td>GET</td>
+      <td>#</td>
+      <td>Admin/User</td>
+    </tr>
+    <tr>
+      <th scope="row">LogOut</th>
+      <td>Token</td>
+      <td>GET</td>
+      <td>#</td>
+      <td>Admin/User</td>
+    </tr>
+    <tr>
+      <th scope="row">LogRead</th>
+      <td>Token</td>
+      <td>GET</td>
+      <td>#</td>
+      <td>Admin</td>
+    </tr>
+    <tr>
+      <th scope="row">UserAdd</th>
+      <td>Token</td>
+      <td>POST</td>
+      <td>Login</td>
+      <td>Admin</td>
+    </tr>
+    <tr>
+      <th scope="row">UserDelete</th>
+      <td>Token</td>
+      <td>DELETE</td>
+      <td>idUser</td>
+      <td>Admin</td>
+    </tr>
+    <tr>
+      <th scope="row">UserDelete</th>
+      <td>Token</td>
+      <td>PUT</td>
+      <td>idUser</td>
+      <td>Admin</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

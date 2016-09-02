@@ -12,6 +12,31 @@ function QueryExcute($Query){
 	$MySQLi->close();
 }
 
+/* Log */
+function LogWrite($idUser, $Description){
+	global $Timestamp;
+	$x=QueryExcute("INSERT INTO `logsystem` VALUES (NULL, '$idUser', '$Timestamp', '$Description');");
+}
+function LogRead($Token){
+	$RankUser=GetRank($Token);
+	if($RankUser=='Administrateur'){
+		if($x=QueryExcute("SELECT `logsystem`.`idLog`, `logsystem`.`Description`, `logsystem`.`Timestamp`, `user`.`idUser`, `user`.`loginUser`, `user`.`rankUser`, `user`.`token` FROM `logsystem`, `user` WHERE `logsystem`.`idUser` = `user`.`idUser` Order by `idLog` DESC")){
+			$reponse["success"] 	= 1;
+			$reponse["message"] 	= "";
+			while($row_x=$x->fetch_assoc()){
+				$reponse_child[]=$row_x;
+				$reponse["logSystem"]=$reponse_child;
+			}
+		$x->close();
+		}
+	}
+	else{
+		$reponse["success"] = 0;
+		$reponse["message"] = "Erreur : Vous êtes pas autorisé!";
+	}
+	print(json_encode($reponse));
+}
+
 /* Authentification */
 function TokenGenerate($idUser){
 	$Token = md5(uniqid($idUser, true));
@@ -41,12 +66,12 @@ function LogIn($loginUser, $passUser){
 				}
 				else{
 					$reponse["success"] = 0;
-					$reponse["message"] = "Vous êtes déjà connecté";
+					$reponse["message"] = "Erreur: Vous êtes déjà connecté";
 				}
 		}
 		else{
 			$reponse["success"] = 0;
-			$reponse["message"] = "Combinaison incorrect!";
+			$reponse["message"] = "Erreur : Combinaison incorrect!";
 		}
 		$x->close();
 	}
@@ -58,7 +83,6 @@ function LogOut($Token){
 		if($row=$x->fetch_assoc()){
 			$idUser=$row["idUser"];
 			$y=QueryExcute("UPDATE `user` SET `token`=NULL WHERE `idUser`='$idUser'");
-			$y->close();
 			LogWrite($idUser, "Deconexion");
 			$reponse["success"] = 1;
 			$reponse["message"] = "Déconnection!";
@@ -78,73 +102,104 @@ function GetRank($Token){
 	return $x["rankUser"];
 	$x->close();
 }
+function GetUserLogin($idUser){
+	$x = QueryExcute("SELECT `loginUser` FROM `user` WHERE `idUser`='$idUser'")->fetch_assoc();
+	return $x["loginUser"];
+	$x->close();
+}
 function IdFromToken($Token){
 	$x = QueryExcute("SELECT `idUser` FROM `user` WHERE `token`='$Token'")->fetch_assoc();
 	return $x["idUser"];
 	$x->close();
 }
-function UserAdd($Login, $Token){
+function UserAdd($Token){
 	global $NewUserDefaultMdp;
 	$RankUser=GetRank($Token);
 	if($RankUser=='Administrateur'){
 		$idAdmin=IdFromToken($Token);
-		if($x=QueryExcute("INSERT INTO `user` values (NULL, '$Login', MD5('".$NewUserDefaultMdp."'), 'Utilisateur', NULL)")){
-			$reponse["success"] = 1;
-			$reponse["message"] = 'Utilisateur : '.$Login.' a été ajouté avec succès';
-			LogWrite($idAdmin, "Nouveau utilisateur : ".$Login);
-			$x->close();	
+		/*
+		Requête HTTP Post
+		*/
+		// tableau de réponse JSON (array)
+		$reponse=array();
+		// tester si les champs sont valides
+		if(isset($_GET['Login'])){
+			$LoginUser=addslashes($_GET['Login']);
+			if($x=QueryExcute("INSERT INTO `user` values (NULL, '$LoginUser', MD5('".$NewUserDefaultMdp."'), 'Utilisateur', NULL)")){
+				$reponse["success"] = 1;
+				$reponse["message"] = 'Utilisateur : '.$LoginUser.' a été ajouté avec succès';
+				LogWrite($idAdmin, "Nouveau utilisateur : ".$LoginUser);
+			}
+			else{
+				$reponse["success"] = 0;
+				$reponse["message"] = "Erreur : nom d'utilisateur est déjà pris";
+			}	
 		}
 		else{
 			$reponse["success"] = 0;
-			$reponse["message"] = "Erreur : nom d'utilisateur est déjà pris";
+			$reponse["message"] = "Erreur : Champ(s) manquant(s)";
 		}
 	}
 	else{
 		$reponse["success"] = 0;
-		$reponse["message"] = "Vous êtes pas autorisé!";
+		$reponse["message"] = "Erreur : Vous êtes pas autorisé!";
 	}
 	print(json_encode($reponse));
-
 }
-
-/* Log */
-function LogWrite($idUser, $Description){
-	global $Timestamp;
-	$x=QueryExcute("INSERT INTO `logsystem` VALUES (NULL, '$idUser', '$Timestamp', '$Description');");
-}
-function LogRead($Token){
+function UserDelete($Token){
 	$RankUser=GetRank($Token);
 	if($RankUser=='Administrateur'){
-		if($x=QueryExcute("SELECT `logsystem`.`idLog`, `logsystem`.`Description`, `logsystem`.`Timestamp`, `user`.`idUser`, `user`.`loginUser`, `user`.`rankUser`, `user`.`token` FROM `logsystem`, `user` WHERE `logsystem`.`idUser` = `user`.`idUser` Order by `idLog` DESC")){
-			$reponse["success"] 	= 1;
-			$reponse["message"] 	= "";
-			while($row_x=$x->fetch_assoc()){
-				$reponse_child[]=$row_x;
-				$reponse["logSystem"]=$reponse_child;
+		$idAdmin=IdFromToken($Token);
+		/*
+		Requête HTTP Post
+		*/
+		// tableau de réponse JSON (array)
+		$reponse=array();
+		// tester si les champs sont valides
+		if(isset($_GET['idUser'])){
+			$idUser=addslashes($_GET['idUser']);
+			$LoginUser=GetUserLogin($idUser);
+			//test si l'utilisateur existe ou pas && l'admin ne peut pas se supprimer (system 1 admin n utilisateur)
+			$y=QueryExcute("SELECT COUNT(*) FROM `user` WHERE `idUser`='$idUser'")->fetch_array();
+			if($y[0]>0){
+				$z=QueryExcute("SELECT `rankUser` FROM `user` WHERE `idUser`='$idUser'")->fetch_assoc();
+				$RankUserFromIdUser=$z["rankUser"];
+				if($RankUserFromIdUser!='Administrateur'){
+					if($x=QueryExcute("DELETE FROM `user` WHERE `user`.`idUser` = ".$idUser)){
+						$reponse["success"] = 1;
+						$reponse["message"] = 'Utilisateur : '.$LoginUser.' a été supprimé avec succès';
+						LogWrite($idAdmin, "Suppression d\'utilisateur : ".$LoginUser);	
+					}
+					else{
+						$reponse["success"] = 0;
+						$reponse["message"] = "Erreur : suppression utilisateur";
+					}	
+				}
+				else{
+					$reponse["success"] = 0;
+					$reponse["message"] = 'Erreur : L\'administrateur ne peut pas se supprimer';
+				}
 			}
-		$x->close();
+			else{
+				$reponse["success"] = 0;
+				$reponse["message"] = 'Erreur : Utilisateur non trouvé!';
+			}
+		}
+		else{
+			$reponse["success"] = 0;
+			$reponse["message"] = "Erreur : Champ(s) manquant(s)";
 		}
 	}
 	else{
 		$reponse["success"] = 0;
-		$reponse["message"] = "Vous êtes pas autorisé!";
+		$reponse["message"] = "Erreur : Vous êtes pas autorisé!";
 	}
 	print(json_encode($reponse));
 }
 
 /* Help */
 function Help(){
-	echo "<br><h2>HTTP REQUEST</h2><br>";
-	echo "CALL METHOD: <b>FUNCTION/VAR1/VAR2/.../VAR5</b><br>";
-	echo "EXEMPLE-1: LogIn/admin/21232f297a57a5a743894a0e4a801fc3<br>";
-	echo "EXEMPLE-2: LogIn/user/ee11cbb19052e40b07aac0ca060c23ee<br><br>";
-	echo "<hr>";
-	echo "<br>";
-	echo "<h3>Functions List</h3><br>";
-	echo "GET LogIn(loginUser, MD5(passUser))<br>";
-	echo "GET LogOut(Token)<br>";
-	echo "GET LogRead(Token)//Only Admin<br>";
-	echo "GET UserAdd(Login, Token)//Only Admin<br>";
+	include "help.html";
 }
-?>
 
+?>

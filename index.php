@@ -19,7 +19,8 @@ if(isset($_GET['f'])){
 		case "LogIn";LogIn($p1, $p2);break;
 		case "LogOut";LogOut($p1);break;
 		//User
-		case "UserAdd";UserAdd($p1, $p2);break;
+		case "UserAdd";UserAdd($p1);break;
+		case "UserDelete";UserDelete($p1);break;
 		//Log
 		case "LogRead";LogRead($p1);break;
 		case "Help";Help();break;
