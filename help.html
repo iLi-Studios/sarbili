@@ -15,15 +15,15 @@
         </tr>
         <tr>
         	<td>HTTP REQUEST & VARIBALES:</td>
-            <td><b>/Function/Function_Var</b></td>
+            <td><b>/Function/Token</b></td>
         </tr>
 		<tr>
         	<td>EXEMPLE-1:</td>
-            <td><b>LogIn/admin/21232f297a57a5a743894a0e4a801fc3</b></td>
+            <td><b>LogIn?Login=admin&Pass=21232f297a57a5a743894a0e4a801fc3 </b></td>
         </tr>
 		<tr>
         	<td>EXEMPLE-2:</td>
-            <td><b>LogIn/user/ee11cbb19052e40b07aac0ca060c23ee</b></td>
+            <td><b>LogIn?Login=user&Pass=242e46207ba47ad7c47415fa039457d5 </b></td>
         </tr>
     </table>
     <br>
@@ -35,51 +35,51 @@
   <tbody>
     <tr>
       <th scope="col">Function</th>
-      <th scope="col">Function_Var</th>
+      <th scope="col">Token</th>
       <th scope="col">Type</th>
       <th scope="col">Type_Var</th>
       <th scope="col">Authorisation</th>
     </tr>
     <tr>
       <th scope="row">LogIn</th>
-      <td>loginUser/MD5(passUser)</td>
+      <td>0</td>
       <td>GET</td>
-      <td>#</td>
+      <td>Login&MD5(Pass)</td>
       <td>Admin/User</td>
     </tr>
     <tr>
       <th scope="row">LogOut</th>
-      <td>Token</td>
+      <td>1</td>
       <td>GET</td>
       <td>#</td>
       <td>Admin/User</td>
     </tr>
     <tr>
       <th scope="row">LogRead</th>
-      <td>Token</td>
+      <td>1</td>
       <td>GET</td>
       <td>#</td>
       <td>Admin</td>
     </tr>
     <tr>
       <th scope="row">UserAdd</th>
-      <td>Token</td>
+      <td>1</td>
       <td>POST</td>
       <td>Login</td>
       <td>Admin</td>
     </tr>
     <tr>
       <th scope="row">UserDelete</th>
-      <td>Token</td>
+      <td>1</td>
       <td>DELETE</td>
       <td>idUser</td>
       <td>Admin</td>
     </tr>
     <tr>
       <th scope="row">UserUpdate</th>
-      <td>Token</td>
+      <td>1</td>
       <td>PUT</td>
-      <td>idUser,NewLoginUser</td>
+      <td>idUser&NewLoginUser</td>
       <td>Admin</td>
     </tr>
   </tbody>

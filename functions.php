@@ -42,38 +42,50 @@ function TokenGenerate($idUser){
 	$Token = md5(uniqid($idUser, true));
 	$x=QueryExcute("UPDATE `user` SET `token`='$Token' WHERE `idUser`='$idUser'");
 }
-function LogIn($loginUser, $passUser){
-	if ($x = QueryExcute("SELECT * FROM `user` WHERE `loginUser`='$loginUser' AND `passUser`='$passUser'")) {
-		if($row_x=$x->fetch_assoc()){
-			// Test si l'utilisateur est déjà connecté pour ne pas ecraté la token
-				if(!isset($row_x["token"])){
-					TokenGenerate($row_x["idUser"]);
-					//Récupération de ligne compléte avec Token en json
-					if ($y = QueryExcute("SELECT * FROM `user` WHERE `loginUser`='$loginUser' AND `passUser`='$passUser'")) {
-						if($row_y=$y->fetch_assoc()){
-							$reponse["success"] = 1;
-							$reponse["message"] = "Bienvenue ".$row_y["loginUser"];
-							$reponse_child[]=$row_y;
-							/*$reponse_child["idUser"] = $row_y["idUser"];
-							$reponse_child["LoginUser"] = $row_y["loginUser"];
-							$reponse_child["RankUser"] = $row_y["rankUser"];
-							$reponse_child["Token"] = $row_y["token"];*/
-							$reponse["User"]=$reponse_child;
-							LogWrite($row_x["idUser"], "Conexion");
+function LogIn(){
+	if(isset($_GET['Login'])&&isset($_GET['Pass'])){
+		$Login=addslashes($_GET['Login']);
+		$Pass=addslashes($_GET['Pass']);
+		if ($x = QueryExcute("SELECT * FROM `user` WHERE `loginUser`='$Login' AND `passUser`='$Pass'")) {
+			if($row_x=$x->fetch_assoc()){
+				// Test si l'utilisateur est déjà connecté pour ne pas ecraté la token
+					if(!isset($row_x["token"])){
+						TokenGenerate($row_x["idUser"]);
+						//Récupération de ligne compléte avec Token en json
+						if ($y = QueryExcute("SELECT * FROM `user` WHERE `loginUser`='$Login' AND `passUser`='$Pass'")) {
+							if($row_y=$y->fetch_assoc()){
+								$reponse["success"] = 1;
+								$reponse["message"] = "Bienvenue ".$row_y["Login"];
+								$reponse_child[]=$row_y;
+								/*$reponse_child["idUser"] = $row_y["idUser"];
+								$reponse_child["LoginUser"] = $row_y["loginUser"];
+								$reponse_child["RankUser"] = $row_y["rankUser"];
+								$reponse_child["Token"] = $row_y["token"];*/
+								$reponse["User"]=$reponse_child;
+								LogWrite($row_x["idUser"], "Conexion");
+							}
 						}
+						$y->close();
 					}
-					$y->close();
-				}
-				else{
-					$reponse["success"] = 0;
-					$reponse["message"] = "Erreur: Vous êtes déjà connecté";
-				}
+					else{
+						$reponse["success"] = 0;
+						$reponse["message"] = "Erreur: Vous êtes déjà connecté";
+					}
+			}
+			else{
+				$reponse["success"] = 0;
+				$reponse["message"] = "Erreur : Combinaison incorrect!";
+			}
+			$x->close();
 		}
 		else{
 			$reponse["success"] = 0;
-			$reponse["message"] = "Erreur : Combinaison incorrect!";
+			$reponse["message"] = "Erreur : Base de données!";		
 		}
-		$x->close();
+	}
+	else{
+		$reponse["success"] = 0;
+		$reponse["message"] = "Erreur : Champ(s) manquant(s)";
 	}
 	print(json_encode($reponse));
 }
