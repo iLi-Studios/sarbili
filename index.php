@@ -20,6 +20,11 @@ if(isset($_GET['f'])){
 		case "UserAdd";UserAdd($p1);break;
 		case "UserDelete";UserDelete($p1);break;
 		case "UserUpdate";UserUpdate($p1);break;
+		//ProductFamily CRUD
+		case "ProductFamilyAdd";ProductFamilyAdd($p1);break;
+		case "ProductFamilyUpdate";ProductFamilyUpdate($p1);break;
+		case "ProductFamilyDelete";ProductFamilyDelete($p1);break;
+		case "ProductFamilyGet";ProductFamilyGet();break;
 		//Log
 		case "LogRead";LogRead($p1);break;
 	}

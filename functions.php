@@ -2,6 +2,7 @@
 /* System */
 $Timestamp = date("d-m-Y H:i:s");
 $NewUserDefaultMdp = "sarbili";
+$SystemToken = sha1($NewUserDefaultMdp);
 function QueryExcute($Query){
 	$MySQLi = new mysqli("localhost", "root", "", "sarbili");
 	if (mysqli_connect_errno()) {
@@ -55,7 +56,7 @@ function LogIn(){
 						if ($y = QueryExcute("SELECT * FROM `user` WHERE `loginUser`='$Login' AND `passUser`='$Pass'")) {
 							if($row_y=$y->fetch_assoc()){
 								$reponse["success"] = 1;
-								$reponse["message"] = "Bienvenue ".$row_y["Login"];
+								$reponse["message"] = "Bienvenue ".$row_y["loginUser"];
 								$reponse_child[]=$row_y;
 								/*$reponse_child["idUser"] = $row_y["idUser"];
 								$reponse_child["LoginUser"] = $row_y["loginUser"];
@@ -158,6 +159,51 @@ function UserAdd($Token){
 	}
 	print(json_encode($reponse));
 }
+function UserUpdate($Token){
+	$RankUser=GetRank($Token);
+	if($RankUser=='Administrateur'){
+		$idAdmin=IdFromToken($Token);
+		/*
+		Requête HTTP Post
+		*/
+		// tableau de réponse JSON (array)
+		$reponse=array();
+		// tester si les champs sont valides
+		if(isset($_GET['idUser'])&&isset($_GET['NewLoginUser'])){
+			$idUser=addslashes($_GET['idUser']);
+			$NewLoginUser=addslashes($_GET['NewLoginUser']);
+			$LoginUser=GetUserLogin($idUser);
+			//test si l'utilisateur existe ou pas && l'admin ne peut pas se supprimer (system 1 admin n utilisateur)
+			$y=QueryExcute("SELECT COUNT(*) FROM `user` WHERE `idUser`='$idUser'")->fetch_array();
+			if($y[0]>0){
+				$z=QueryExcute("SELECT `rankUser` FROM `user` WHERE `idUser`='$idUser'")->fetch_assoc();
+				$RankUserFromIdUser=$z["rankUser"];
+				if($x=QueryExcute("UPDATE `user` SET `loginUser` = '".$NewLoginUser."' WHERE `idUser` =".$idUser)){
+					$reponse["success"] = 1;
+					$reponse["message"] = 'Mise à jour nom d\'utilisateur de '.$LoginUser.' a '.$NewLoginUser;
+					LogWrite($idAdmin, "Mise a jour nom d\'utilisateur de ".$LoginUser." a ".$NewLoginUser);	
+				}
+				else{
+					$reponse["success"] = 0;
+					$reponse["message"] = "Erreur : Modification utilisateur";
+				}	
+			}
+			else{
+				$reponse["success"] = 0;
+				$reponse["message"] = 'Erreur : Utilisateur non trouvé!';
+			}
+		}
+		else{
+			$reponse["success"] = 0;
+			$reponse["message"] = "Erreur : Champ(s) manquant(s)";
+		}
+	}
+	else{
+		$reponse["success"] = 0;
+		$reponse["message"] = "Erreur : Vous êtes pas autorisé!";
+	}
+	print(json_encode($reponse));
+}
 function UserDelete($Token){
 	$RankUser=GetRank($Token);
 	if($RankUser=='Administrateur'){
@@ -208,7 +254,29 @@ function UserDelete($Token){
 	}
 	print(json_encode($reponse));
 }
-function UserUpdate($Token){
+
+/*Productfamily */
+function ProductFamilyGet(){
+	$reponse=array();
+	$x=QueryExcute("SELECT COUNT(*) FROM `productfamily`")->fetch_array();
+	if($x[0]>0){
+		if($y=QueryExcute("SELECT * FROM `productfamily`")){
+			$reponse["success"] 	= 1;
+			$reponse["message"] 	= "";
+			while($row_y=$y->fetch_assoc()){
+				$reponse_child[]=$row_y;
+				$reponse["ProductFamily"]=$reponse_child;
+			}
+		$y->close();
+		}
+	}
+	else{
+		$reponse["success"] = 0;
+		$reponse["message"] = "Erreur : Pas de resultat!";
+	}
+	print(json_encode($reponse));
+}
+function ProductFamilyAdd($Token){
 	$RankUser=GetRank($Token);
 	if($RankUser=='Administrateur'){
 		$idAdmin=IdFromToken($Token);
@@ -218,28 +286,120 @@ function UserUpdate($Token){
 		// tableau de réponse JSON (array)
 		$reponse=array();
 		// tester si les champs sont valides
-		if(isset($_GET['idUser'])&&isset($_GET['NewLoginUser'])){
-			$idUser=addslashes($_GET['idUser']);
-			$NewLoginUser=addslashes($_GET['NewLoginUser']);
-			$LoginUser=GetUserLogin($idUser);
-			//test si l'utilisateur existe ou pas && l'admin ne peut pas se supprimer (system 1 admin n utilisateur)
-			$y=QueryExcute("SELECT COUNT(*) FROM `user` WHERE `idUser`='$idUser'")->fetch_array();
-			if($y[0]>0){
-				$z=QueryExcute("SELECT `rankUser` FROM `user` WHERE `idUser`='$idUser'")->fetch_assoc();
-				$RankUserFromIdUser=$z["rankUser"];
-				if($x=QueryExcute("UPDATE `user` SET `loginUser` = '".$NewLoginUser."' WHERE `idUser` =".$idUser)){
+		if(isset($_GET['NameProductFamily'])){
+			$NameProductFamily=addslashes($_GET['NameProductFamily']);
+			//test si NameProductFamily existe déjà
+			$x=QueryExcute("SELECT COUNT(*) FROM `productfamily` WHERE `NameProductFamily`='$NameProductFamily'")->fetch_array();
+			if($x[0]=0){
+				if($y=QueryExcute("INSERT INTO `productfamily` VALUES (NULL, '$NameProductFamily');")){
 					$reponse["success"] = 1;
-					$reponse["message"] = 'Mise à jour nom d\'utilisateur de '.$LoginUser.' a '.$NewLoginUser;
-					LogWrite($idAdmin, "Mise a jour nom d\'utilisateur de ".$LoginUser." a ".$NewLoginUser);	
+					$reponse["message"] = 'Famille de produit : '.$NameProductFamily.' a été ajouté avec succès';
+					LogWrite($idAdmin, "Nouvelle famille de produit : ".$NameProductFamily);
 				}
 				else{
 					$reponse["success"] = 0;
-					$reponse["message"] = "Erreur : Modification utilisateur";
+					$reponse["message"] = "Erreur : Insertion des données";
+				}
+			}
+			else{
+				$reponse["success"] = 0;
+				$reponse["message"] = "Erreur : Famille de produit déjà existante!";
+			}
+		}
+		else{
+			$reponse["success"] = 0;
+			$reponse["message"] = "Erreur : Champ(s) manquant(s)";
+		}
+	}
+	else{
+		$reponse["success"] = 0;
+		$reponse["message"] = "Erreur : Vous êtes pas autorisé!";
+	}
+	print(json_encode($reponse));
+}
+function ProductFamilyUpdate($Token){
+	$RankUser=GetRank($Token);
+	if($RankUser=='Administrateur'){
+		$idAdmin=IdFromToken($Token);
+		/*
+		Requête HTTP Post
+		*/
+		// tableau de réponse JSON (array)
+		$reponse=array();
+		// tester si les champs sont valides
+		if(isset($_GET['idProductFamily'])&&isset($_GET['NewNameProductFamily'])){
+			$idProductFamily=addslashes($_GET['idProductFamily']);
+			$NewNameProductFamily=addslashes($_GET['NewNameProductFamily']);
+			//test si la famille existe
+			$x=QueryExcute("SELECT COUNT(*) FROM `productfamily` WHERE `idProductFamily`='$idProductFamily'")->fetch_array();
+			if($x[0]>0){
+				// récupération de l'ancien nom de faille avant le mise a jour
+				$y=QueryExcute("SELECT `NameProductFamily` FROM `productfamily` WHERE `idProductFamily`='$idProductFamily'")->fetch_assoc();
+				$LastNameProductFamily=$y["NameProductFamily"];
+				// S'il y a pas de diffirence entre l'ancien et le nouveau champ pas d'execution de requêtte
+				if($LastNameProductFamily!=$NewNameProductFamily){
+					if($z=QueryExcute("UPDATE `productfamily` SET `NameProductFamily` = '".$NewNameProductFamily."' WHERE `idProductFamily` =".$idProductFamily)){
+						$reponse["success"] = 1;
+						$reponse["message"] = 'Mise à jour de la famille du produit, de '.$LastNameProductFamily.' a '.$NewNameProductFamily;
+						LogWrite($idAdmin, "Mise à jour de la famille du produit, de ".$LastNameProductFamily." a ".$NewNameProductFamily);	
+					}
+					else{
+						$reponse["success"] = 0;
+						$reponse["message"] = "Erreur : Modification de la famille du produit";
+					}	
+				}
+				else{
+					$reponse["success"] = 0;
+					$reponse["message"] = 'Erreur : Pas de mise à jour!';
+				}
+			}
+			else{
+				$reponse["success"] = 0;
+				$reponse["message"] = 'Erreur : Famille de produit non trouvé!';
+			}
+		}
+		else{
+			$reponse["success"] = 0;
+			$reponse["message"] = "Erreur : Champ(s) manquant(s)";
+		}
+	}
+	else{
+		$reponse["success"] = 0;
+		$reponse["message"] = "Erreur : Vous êtes pas autorisé!";
+	}
+	print(json_encode($reponse));
+}
+function ProductFamilyDelete($Token){
+	$RankUser=GetRank($Token);
+	if($RankUser=='Administrateur'){
+		$idAdmin=IdFromToken($Token);
+		/*
+		Requête HTTP Post
+		*/
+		// tableau de réponse JSON (array)
+		$reponse=array();
+		// tester si les champs sont valides
+		if(isset($_GET['idProductFamily'])){
+			$idProductFamily=addslashes($_GET['idProductFamily']);
+			//test si la famille existe
+			$x=QueryExcute("SELECT COUNT(*) FROM `productfamily` WHERE `idProductFamily`='$idProductFamily'")->fetch_array();
+			if($x[0]>0){
+				// récupération de l'ancien nom de faille avant la suppression
+				$y=QueryExcute("SELECT `NameProductFamily` FROM `productfamily` WHERE `idProductFamily`='$idProductFamily'")->fetch_assoc();
+				$LastNameProductFamily=$y["NameProductFamily"];
+				if($z=QueryExcute("DELETE FROM `productfamily` WHERE `idProductFamily` = ".$idProductFamily)){
+					$reponse["success"] = 1;
+					$reponse["message"] = 'Suppression de la famille du produit '.$LastNameProductFamily;
+					LogWrite($idAdmin, "Suppression de la famille du produit  ".$LastNameProductFamily);	
+				}
+				else{
+					$reponse["success"] = 0;
+					$reponse["message"] = "Erreur : Suppression de la famille du produit";
 				}	
 			}
 			else{
 				$reponse["success"] = 0;
-				$reponse["message"] = 'Erreur : Utilisateur non trouvé!';
+				$reponse["message"] = 'Erreur : Famille de produit non trouvé!';
 			}
 		}
 		else{
