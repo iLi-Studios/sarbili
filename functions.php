@@ -130,10 +130,7 @@ function UserAdd($Token){
 	$RankUser=GetRank($Token);
 	if($RankUser=='Administrateur'){
 		$idAdmin=IdFromToken($Token);
-		/*
-		Requête HTTP Post
-		*/
-		// tableau de réponse JSON (array)
+				// tableau de réponse JSON (array)
 		$reponse=array();
 		// tester si les champs sont valides
 		if(isset($_GET['Login'])){
@@ -163,10 +160,7 @@ function UserUpdate($Token){
 	$RankUser=GetRank($Token);
 	if($RankUser=='Administrateur'){
 		$idAdmin=IdFromToken($Token);
-		/*
-		Requête HTTP Post
-		*/
-		// tableau de réponse JSON (array)
+				// tableau de réponse JSON (array)
 		$reponse=array();
 		// tester si les champs sont valides
 		if(isset($_GET['idUser'])&&isset($_GET['NewLoginUser'])){
@@ -208,10 +202,7 @@ function UserDelete($Token){
 	$RankUser=GetRank($Token);
 	if($RankUser=='Administrateur'){
 		$idAdmin=IdFromToken($Token);
-		/*
-		Requête HTTP Post
-		*/
-		// tableau de réponse JSON (array)
+				// tableau de réponse JSON (array)
 		$reponse=array();
 		// tester si les champs sont valides
 		if(isset($_GET['idUser'])){
@@ -255,35 +246,12 @@ function UserDelete($Token){
 	print(json_encode($reponse));
 }
 
-/*Productfamily */
-function ProductFamilyGet(){
-	$reponse=array();
-	$x=QueryExcute("SELECT COUNT(*) FROM `productfamily`")->fetch_array();
-	if($x[0]>0){
-		if($y=QueryExcute("SELECT * FROM `productfamily`")){
-			$reponse["success"] 	= 1;
-			$reponse["message"] 	= "";
-			while($row_y=$y->fetch_assoc()){
-				$reponse_child[]=$row_y;
-				$reponse["ProductFamily"]=$reponse_child;
-			}
-		$y->close();
-		}
-	}
-	else{
-		$reponse["success"] = 0;
-		$reponse["message"] = "Erreur : Pas de resultat!";
-	}
-	print(json_encode($reponse));
-}
+/*ProductFamily */
 function ProductFamilyAdd($Token){
 	$RankUser=GetRank($Token);
 	if($RankUser=='Administrateur'){
 		$idAdmin=IdFromToken($Token);
-		/*
-		Requête HTTP Post
-		*/
-		// tableau de réponse JSON (array)
+				// tableau de réponse JSON (array)
 		$reponse=array();
 		// tester si les champs sont valides
 		if(isset($_GET['NameProductFamily'])){
@@ -321,10 +289,7 @@ function ProductFamilyUpdate($Token){
 	$RankUser=GetRank($Token);
 	if($RankUser=='Administrateur'){
 		$idAdmin=IdFromToken($Token);
-		/*
-		Requête HTTP Post
-		*/
-		// tableau de réponse JSON (array)
+				// tableau de réponse JSON (array)
 		$reponse=array();
 		// tester si les champs sont valides
 		if(isset($_GET['idProductFamily'])&&isset($_GET['NewNameProductFamily'])){
@@ -373,10 +338,7 @@ function ProductFamilyDelete($Token){
 	$RankUser=GetRank($Token);
 	if($RankUser=='Administrateur'){
 		$idAdmin=IdFromToken($Token);
-		/*
-		Requête HTTP Post
-		*/
-		// tableau de réponse JSON (array)
+				// tableau de réponse JSON (array)
 		$reponse=array();
 		// tester si les champs sont valides
 		if(isset($_GET['idProductFamily'])){
@@ -400,6 +362,151 @@ function ProductFamilyDelete($Token){
 			else{
 				$reponse["success"] = 0;
 				$reponse["message"] = 'Erreur : Famille de produit non trouvé!';
+			}
+		}
+		else{
+			$reponse["success"] = 0;
+			$reponse["message"] = "Erreur : Champ(s) manquant(s)";
+		}
+	}
+	else{
+		$reponse["success"] = 0;
+		$reponse["message"] = "Erreur : Vous êtes pas autorisé!";
+	}
+	print(json_encode($reponse));
+}
+
+/*ProductSubFamily*/
+function ProductSubFamilyAdd($Token){
+	$RankUser=GetRank($Token);
+	if($RankUser=='Administrateur'){
+		$idAdmin=IdFromToken($Token);
+		// tableau de réponse JSON (array)
+		$reponse=array();
+		// tester si les champs sont valides
+		if((isset($_GET['NameProductSubFamily']))&&(isset($_GET['idProductFamily']))){
+			$NameProductSubFamily=addslashes($_GET['NameProductSubFamily']);
+			$idProductFamily=addslashes($_GET['idProductFamily']);
+			//test si NameProductFamily existe déjà
+			$x=QueryExcute("SELECT COUNT(*) FROM `productsubfamily` WHERE `NameProductSubFamily`='$NameProductSubFamily'")->fetch_array();
+			if($x[0]==0){
+				$y=QueryExcute("SELECT COUNT(*) FROM `productfamily` WHERE `idProductFamily`='$idProductFamily'")->fetch_array();
+				if($y[0]>0){
+					if($z=QueryExcute("INSERT INTO `productsubfamily` VALUES (NULL, '$idProductFamily', '$NameProductSubFamily');")){
+						$reponse["success"] = 1;
+						$reponse["message"] = 'La sous famille de produit '.$NameProductSubFamily.' a été ajouté avec succès';
+						LogWrite($idAdmin, "Nouvelle sous famille de produit : ".$NameProductSubFamily);
+					}
+					else{
+						$reponse["success"] = 0;
+						$reponse["message"] = "Erreur : Insertion des données";
+					}
+				}
+				else{
+					$reponse["success"] = 0;
+					$reponse["message"] = "Erreur : famille de produit inexistante!";
+				}
+			}
+			else{
+				$reponse["success"] = 0;
+				$reponse["message"] = "Erreur : Sous famille de produit inexistante!";
+			}
+		}
+		else{
+			$reponse["success"] = 0;
+			$reponse["message"] = "Erreur : Champ(s) manquant(s)";
+		}
+	}
+	else{
+		$reponse["success"] = 0;
+		$reponse["message"] = "Erreur : Vous êtes pas autorisé!";
+	}
+	print(json_encode($reponse));
+}
+function ProductSubFamilyUpdate($Token){
+	$RankUser=GetRank($Token);
+	if($RankUser=='Administrateur'){
+		$idAdmin=IdFromToken($Token);
+		// tableau de réponse JSON (array)
+		$reponse=array();
+		// tester si les champs sont valides
+		if((isset($_GET['idProductSubFamily']))&&(isset($_GET['idProductFamily']))&&(isset($_GET['NameProductSubFamily']))){
+			$idProductSubFamily=addslashes($_GET['idProductSubFamily']);
+			$NameProductSubFamily=addslashes($_GET['NameProductSubFamily']);
+			$idProductFamily=addslashes($_GET['idProductFamily']);
+			//test si idProductSubFamily existe déjà
+			$z=QueryExcute("SELECT COUNT(*) FROM `productsubfamily` WHERE `idProductSubFamily`='$idProductSubFamily'")->fetch_array();
+			if($z[0]>0){
+				//test si idProductFamily existe déjà
+				$y=QueryExcute("SELECT COUNT(*) FROM `productfamily` WHERE `idProductFamily`='$idProductFamily'")->fetch_array();
+				if($y[0]>0){
+					//récupération des info de la ligne avant la modéfication
+					$x=QueryExcute("SELECT `productsubfamily`.`NameProductSubFamily`, `productfamily`.`NameProductFamily` FROM `productsubfamily`, `productfamily` WHERE `productfamily`.`idProductFamily`= `productsubfamily`.`idProductFamily` AND `productsubfamily`.`idProductSubFamily`='$idProductSubFamily'")->fetch_assoc();
+					$LastNameProductSubFamily=$x["NameProductSubFamily"];
+					$LastNameProductFamily=$x["NameProductFamily"];
+					//récupération du nom de la famille a partir de son id aprés MAJ
+					$w=QueryExcute("SELECT `NameProductFamily` FROM `productfamily` WHERE `idProductFamily`='$idProductFamily'")->fetch_assoc();
+					$NameProductFamily=$w["NameProductFamily"];
+					if($v=QueryExcute("UPDATE `productsubfamily` SET `NameProductSubFamily`='$NameProductSubFamily', `idProductFamily`='$idProductFamily' WHERE `idProductSubFamily`='$idProductSubFamily'")){
+						$reponse["success"] = 1;
+						$reponse["message"] = 'Mise à jour de la sous famille et/ou famille de produit, du '.$LastNameProductSubFamily.' de famille '.$LastNameProductFamily.' à '.$NameProductSubFamily.' de famille '.$NameProductFamily;
+						LogWrite($idAdmin, "Mise à jour de la sous famille et/ou famille de produit, du ".$LastNameProductSubFamily." de famille ".$LastNameProductFamily." à ".$NameProductSubFamily." de famille ".$NameProductFamily);	
+					}
+					else{
+						$reponse["success"] = 0;
+						$reponse["message"] = "Erreur : Modification de la famille du produit";
+					}
+				}
+				else{
+					$reponse["success"] = 0;
+					$reponse["message"] = "Erreur : Famille de produit inexistante!";
+				}
+			}
+			else{
+				$reponse["success"] = 0;
+				$reponse["message"] = "Erreur : Sous famille de produit inexistante!";
+			}
+		}
+		else{
+			$reponse["success"] = 0;
+			$reponse["message"] = "Erreur : Champ(s) manquant(s)";
+		}
+	}
+	else{
+		$reponse["success"] = 0;
+		$reponse["message"] = "Erreur : Vous êtes pas autorisé!";
+	}
+	print(json_encode($reponse));
+}
+function ProductSubFamilyDelete($Token){
+	$RankUser=GetRank($Token);
+	if($RankUser=='Administrateur'){
+		$idAdmin=IdFromToken($Token);
+		// tableau de réponse JSON (array)
+		$reponse=array();
+		// tester si les champs sont valides
+		if(isset($_GET['idProductSubFamily'])){
+			$idProductSubFamily=addslashes($_GET['idProductSubFamily']);
+			//test si idProductSubFamily existe déjà
+			$z=QueryExcute("SELECT COUNT(*) FROM `productsubfamily` WHERE `idProductSubFamily`='$idProductSubFamily'")->fetch_array();
+			if($z[0]>0){
+				//récupération des info de la ligne avant la modéfication
+				$x=QueryExcute("SELECT `NameProductSubFamily` FROM `productsubfamily` WHERE `idProductSubFamily`='$idProductSubFamily'")->fetch_assoc();
+				$LastNameProductSubFamily=$x["NameProductSubFamily"];
+				//récupération du nom de la famille a partir de son id aprés MAJ
+				if($v=QueryExcute("DELETE FROM `productsubfamily` WHERE `idProductSubFamily` = '$idProductSubFamily'")){
+					$reponse["success"] = 1;
+					$reponse["message"] = 'Supression du sous famille '.$LastNameProductSubFamily;
+					LogWrite($idAdmin, "Supression du sous famille ".$LastNameProductSubFamily);
+				}
+				else{
+					$reponse["success"] = 0;
+					$reponse["message"] = "Erreur : Suppression de la famille du produit";
+				}
+			}
+			else{
+				$reponse["success"] = 0;
+				$reponse["message"] = "Erreur : Sous famille de produit inexistante!";
 			}
 		}
 		else{

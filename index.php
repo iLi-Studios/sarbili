@@ -20,11 +20,15 @@ if(isset($_GET['f'])){
 		case "UserAdd";UserAdd($p1);break;
 		case "UserDelete";UserDelete($p1);break;
 		case "UserUpdate";UserUpdate($p1);break;
-		//ProductFamily CRUD
+		//ProductFamily
 		case "ProductFamilyAdd";ProductFamilyAdd($p1);break;
 		case "ProductFamilyUpdate";ProductFamilyUpdate($p1);break;
 		case "ProductFamilyDelete";ProductFamilyDelete($p1);break;
 		case "ProductFamilyGet";ProductFamilyGet();break;
+		//ProductSubFamily
+		case "ProductSubFamilyAdd";ProductSubFamilyAdd($p1);break;
+		case "ProductSubFamilyUpdate";ProductSubFamilyUpdate($p1);break;
+		case "ProductSubFamilyDelete";ProductSubFamilyDelete($p1);break;
 		//Log
 		case "LogRead";LogRead($p1);break;
 	}

@@ -37,7 +37,7 @@
       <th scope="col">Function</th>
       <th scope="col">Token</th>
       <th scope="col">Type</th>
-      <th scope="col">Type_Var</th>
+      <th scope="col">Variables</th>
       <th scope="col">Authorisation</th>
     </tr>
     <tr>
@@ -87,7 +87,7 @@
       <td>1</td>
       <td>GET</td>
       <td>#</td>
-      <td>System</td>
+      <td>#</td>
     </tr>
 	<tr>
       <th scope="row">ProductFamilyAdd</th>
@@ -108,6 +108,27 @@
       <td>1</td>
       <td>DELETE</td>
       <td>idProductFamily </td>
+      <td>Admin</td>
+    </tr>
+	<tr>
+      <th scope="row">ProductSubFamilyAdd</th>
+      <td>1</td>
+      <td>POST</td>
+      <td>idProductFamily&NameProductSubFamily </td>
+      <td>Admin</td>
+    </tr>
+    <tr>
+      <th scope="row">ProductSubFamilyUpdate</th>
+      <td>1</td>
+      <td>PUT</td>
+      <td>idProductSubFamily&idProductFamily&NameProductSubFamily </td>
+      <td>Admin</td>
+    </tr>
+    <tr>
+      <th scope="row">ProductSubFamilyDelete</th>
+      <td>1</td>
+      <td>DELETE</td>
+      <td>idProductSubFamily </td>
       <td>Admin</td>
     </tr>
   </tbody>
