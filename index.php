@@ -29,6 +29,9 @@ if(isset($_GET['f'])){
 		case "ProductSubFamilyAdd";ProductSubFamilyAdd($p1);break;
 		case "ProductSubFamilyUpdate";ProductSubFamilyUpdate($p1);break;
 		case "ProductSubFamilyDelete";ProductSubFamilyDelete($p1);break;
+		//Product
+		case "ProductGet";ProductGet($p1);break;
+		case "ProductAdd";ProductAdd($p1);break;
 		//Log
 		case "LogRead";LogRead($p1);break;
 	}

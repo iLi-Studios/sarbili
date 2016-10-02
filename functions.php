@@ -9,6 +9,8 @@ function QueryExcute($Query){
 		printf("Echec de la connexion : %s\n", mysqli_connect_error());
 		exit();
 	}
+	//add UTF8
+	$MySQLi->set_charset("utf8");
 	return $MySQLi->query($Query);
 	$MySQLi->close();
 }
@@ -520,6 +522,74 @@ function ProductSubFamilyDelete($Token){
 	}
 	print(json_encode($reponse));
 }
+
+/* Product */
+function ProductGet($Token){
+	$RankUser=GetRank($Token);
+	if($RankUser){
+		if($x=QueryExcute("SELECT `productfamily`.`NameProductFamily`, `productsubfamily`.`NameProductSubFamily`, `product`.`idProduct`, `product`.`NameProduct`, `product`.`PriceProduct` FROM `productfamily`, `productsubfamily`, `product` WHERE `product`.`idProductSubFamily`=`productsubfamily`.`idProductSubFamily` AND `productsubfamily`.`idProductFamily`=`productfamily`.`idProductFamily` ORDER BY `product`.`idProduct` ASC")){
+			$reponse["success"] 	= 1;
+			$reponse["message"] 	= "";
+			while($row_x=$x->fetch_assoc()){
+				$reponse_child[]=$row_x;
+				$reponse["Product"]=$reponse_child;
+			}
+		$x->close();
+		}
+	}
+	else{
+		$reponse["success"] = 0;
+		$reponse["message"] = "Erreur : Vous êtes pas autorisé!";
+	}
+	print(json_encode($reponse));
+}
+function ProductAdd($Token){
+	$RankUser=GetRank($Token);
+	if($RankUser=='Administrateur'){
+		$idAdmin=IdFromToken($Token);
+		// tableau de réponse JSON (array)
+		$reponse=array();
+		// tester si les champs sont valides
+		if((isset($_GET['NameProductSubFamily']))&&(isset($_GET['idProductFamily']))){
+			$NameProductSubFamily=addslashes($_GET['NameProductSubFamily']);
+			$idProductFamily=addslashes($_GET['idProductFamily']);
+			//test si NameProductFamily existe déjà
+			$x=QueryExcute("SELECT COUNT(*) FROM `productsubfamily` WHERE `NameProductSubFamily`='$NameProductSubFamily'")->fetch_array();
+			if($x[0]==0){
+				$y=QueryExcute("SELECT COUNT(*) FROM `productfamily` WHERE `idProductFamily`='$idProductFamily'")->fetch_array();
+				if($y[0]>0){
+					if($z=QueryExcute("INSERT INTO `productsubfamily` VALUES (NULL, '$idProductFamily', '$NameProductSubFamily');")){
+						$reponse["success"] = 1;
+						$reponse["message"] = 'La sous famille de produit '.$NameProductSubFamily.' a été ajouté avec succès';
+						LogWrite($idAdmin, "Nouvelle sous famille de produit : ".$NameProductSubFamily);
+					}
+					else{
+						$reponse["success"] = 0;
+						$reponse["message"] = "Erreur : Insertion des données";
+					}
+				}
+				else{
+					$reponse["success"] = 0;
+					$reponse["message"] = "Erreur : famille de produit inexistante!";
+				}
+			}
+			else{
+				$reponse["success"] = 0;
+				$reponse["message"] = "Erreur : Sous famille de produit inexistante!";
+			}
+		}
+		else{
+			$reponse["success"] = 0;
+			$reponse["message"] = "Erreur : Champ(s) manquant(s)";
+		}
+	}
+	else{
+		$reponse["success"] = 0;
+		$reponse["message"] = "Erreur : Vous êtes pas autorisé!";
+	}
+	print(json_encode($reponse));
+}
+
 
 /* Help */
 function Help(){
